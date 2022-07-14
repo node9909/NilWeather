@@ -14,11 +14,6 @@ async function getDeviceLocation() {
 
   loadingLocation.value = true;
 
-  location.value = {
-    lat: 51.5,
-    long: -0.25
-  };
-
   navigator.geolocation.getCurrentPosition(position => {
     loadingLocation.value = false;
 
