@@ -3,6 +3,8 @@
 import './assets/styles/app.scss';
 
 import { ref } from '@vue/reactivity';
+import { watch } from '@vue/runtime-core';
+import axios from 'axios';
 
 
 const location = ref(undefined);
@@ -12,14 +14,40 @@ async function getDeviceLocation() {
 
   loadingLocation.value = true;
 
+  location.value = {
+    lat: 51.5,
+    long: -0.25
+  };
+
   navigator.geolocation.getCurrentPosition(position => {
     loadingLocation.value = false;
-    console.log(position);
+
+    location.value = {
+      lat: position.coords.latitude,
+      long: position.coords.longitude
+    };
+
   }, error => {
     loadingLocation.value = false;
     console.error(error);
   });
+
 }
+
+
+const locationInfo = ref(undefined);
+const loadingInfo = ref(false);
+const info = ref('');
+
+watch(location, async () => {
+  if (!location.value) return;
+
+  const response = await axios.get('http://localhost:8000/forecast/', { data: location.value });
+  const data = response.data;
+
+  info.value = data.properties.timeseries[0].data.instant.details.air_temperature;
+
+});
 
 </script>
 
@@ -39,6 +67,18 @@ async function getDeviceLocation() {
               Request Location
             </v-btn>
           </v-card-actions>
+
+        </v-card>
+
+        <v-card title="Location Information" class="mt-3">
+
+          <v-card-text v-if="!location">
+            No location entered!
+          </v-card-text>
+
+          <v-card-text v-if="info">
+            Air temprature is {{ info }} celsius.
+          </v-card-text>
 
         </v-card>
 
